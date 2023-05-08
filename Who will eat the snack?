@@ -1,0 +1,21 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+
+int main() {
+
+	int comp, user;
+	srand(time(NULL));
+	comp = rand() % 2 + 1;
+	scanf_s("%d", &user);
+	printf("choose(1, 2):%d\n", user);
+	
+	if ((user - comp) == 1)
+		printf("eat");
+	else if ((user - comp) == -1)
+		printf("don't eat");
+	else
+		printf("only __ eat"); //you can add your name or friends' name.
+
+	return 0;
+}
