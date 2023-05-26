@@ -1,0 +1,156 @@
+CircularLinkedList header file
+
+#pragma once
+
+typedef struct ListNode {
+	char data[4];
+	struct ListNode* link;
+}listNode;
+//listNode: 데이터와 링크있는 리스트노드
+
+typedef struct {
+	listNode* head;
+}linkedList_h;
+//linkedList_h: listNode를 포인터로 설정. head->포인터입니댜
+
+linkedList_h* createLinkedList_h(void); //리스트 헤드 링크 만들기
+void printList(linkedList_h* CL);// 리스트 CL을 프린트해서 보여주는 함수
+void insertFirstNode(linkedList_h* CL, char* x);//첫번째 노드삽입 함수
+void insertMiddleNode(linkedList_h* CL, listNode* pre, char* x);//중간 노드삽입 함수
+void deleteNode(linkedList_h* CL, listNode* old);//노드삭제 함수
+listNode* searchNode(linkedList_h* CL, char* x);//data x 찾는 함수
+
+CircularLinkedList.c
+
+#pragma warning(disable:6011)
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include"CircularLinkedList.h"
+
+linkedList_h* createLinkedList_h(void) {
+	linkedList_h* CL;//리스트 CL에 헤드포인터 주기(주소)
+	CL = (linkedList_h*)malloc(sizeof(linkedList_h)); //리스트CL 헤드에 메모리 할당. 메모리에는 쓰레기값 들어있음
+	CL->head = NULL; //구조체포인터CL의 멤버변수 head에 NULL값 저장
+
+	return CL;
+}//리스트생성
+
+void printList(linkedList_h* CL) {
+	listNode* p; //구조체 포인터 p생성
+	printf("CL=(");
+	p = CL->head; // p에 변수헤드값 저장
+
+	if (p == NULL) {
+		printf(")\n"); return;
+	}
+	do {
+		printf("%s", p->data);
+		p = p->link;
+		if (p != CL->head) printf(", ");
+	} while (p != CL->head); //p가 리스트를 한 바퀴 돌고 오면 head와 가르키는 주소가 같아짐. 그때가 끝(마지막)!
+	printf(")\n");
+}
+//헤드값이 NULL이면 아직 리스트CL은 비어있음. 바로 프린트히히
+//헤드값이 NULL이 아니면 p에 저장된 데이터 프린트하고 p에 link를 p에 저장 
+
+void insertFirstNode(linkedList_h* CL, char* x) {
+	listNode* newNode, * temp; //삽입할 새로운 노드: newNode, 새로운 노드가 가르키는 주소를 찾기 위한 임시 포인터: temp
+	newNode = (listNode*)malloc(sizeof(listNode));//새로운 노드에 메모리할당(memory allocation)
+	strcpy(newNode->data, x); //새로운 노드의 데이터에 x문자 삽입
+	if (CL->head == NULL) {
+		CL->head = newNode; //헤드가 NULL이면 뒷 리스트 없고 얘가 첫번째이자 마지막. 헤드에 새로운 노드 가르키게 링크연결
+		newNode->link = newNode; //새로운 노드의 링크가 처음이자 마지막이므로 자기자신을 가르키게 링크연결
+	}
+	else {
+		temp = CL->head = newNode; //헤드가 NULL이 아니면 뒤에 리스트 존재. CL의 링크에 새로운 노드의 링크 연결. temp에 헤드링크 저장
+		while (temp->link != CL->head) //temp의 링크가 CL의 헤드링크와 다르면 동작
+			temp = temp->link; //temp의 링크가 CL의 헤드링크와 다르면 temp에 링크 저장(다음 노드로 넘어감), 맨 마지막 노드 찾는 과정
+		newNode->link = temp->link; //새로운 노드의 링크설정(다음 노드 가르키도록, 원래 temp가 가르키던 노드==새로운 노드가 가르켜야할 노드)
+		//temp의 링크가 CL의 헤드링크와 같으면 temp의 링크를 새로운 노드 링크에 저장(맨마지막 노드 찾음, 새로운 노드 뒤에 노드와 연결시키기)
+		temp->link = newNode; //temp의 링크에 새로운 노드 링크 연결(원형링크기 때문에)
+		CL->head = newNode; //CL의 헤드가 새로운 노드를 가르키도록 연결
+	}
+}//첫번째 노드 삽입
+
+void insertMiddleNode(linkedList_h* CL, listNode* pre, char* x) {
+	listNode* newNode; //삽입할 새로운 노드 생성
+	newNode = (listNode*)malloc(sizeof(listNode)); //새로운 노드에 메모리할당
+	strcpy(newNode->data, x); //새로운 노드에 데이터 삽입
+	if (CL->head == NULL) {
+		CL->head = newNode; //헤드가 NULL이면 리스트 비어있고 처음이자 마지막 됨.
+		newNode->link = newNode; //자기자신을 가르키게 연결
+	}
+	else {
+		newNode->link = pre->link; //이전 노드의 링크를 새로운 노드링크에 연결
+		pre->link = newNode; // 이전 노드 링크가 새로운 노드를 가르키도록 연결
+	}
+}//중간 노드 삽입
+
+void deleteNode(linkedList_h* CL, listNode* old) { //old: 지우려고하는 노드
+	listNode* pre; //이전 노드 가져오기, 지울 노드 찾을 때 CL변하는 것 방지
+	if (CL->head == NULL)return; //헤드가 NULL이면 삭제할 노드가 없으므로 반환
+	if (CL->head->link == CL->head) { //CL의 헤드가 CL자체를 가르키면 
+		free(CL->head); //CL헤드를 프리시켜줌
+		CL->head = NULL; //CL의 헤드에 NULL 넣어줌
+		return;
+	}
+	else if (old == NULL)return; //지워야할 노드가 NULL이면 반환.
+	else {
+		pre = CL->head; //CL의 헤드가 가르키는 값을 이전에 저장
+		while (pre->link != old) { //pre가 가르키는 링크가 old가 아니면 실행
+			pre = pre->link; //다음노드로 이동
+		}
+		pre->link = old->link; //pre가 가르키는 노드가 old면 old가 가르키는 노드를 pre 링크에 저장
+		if (old == CL->head) //old가 CL의 헤드가 가르키는 값과 같으면(지우려는 노드가 맨 첫번째 노드일 때)
+			CL->head = old->link; //old의 링크를 CL의 헤드에 저장
+		free(old); //지우려는 노드 프리시켜주기
+	}
+}//노드 삭제
+
+listNode* searchNode(linkedList_h* CL, char* x) {
+	listNode* temp; //CL이 변동되는 것을 방지
+	temp = CL->head;//CL의 헤드가 가르키는 링크를 temp에 저장
+	if (temp == NULL)return NULL; //temp가 NULL이면(리스트가 없으면) 반환
+	do { //일단 한 번은 먼저 함
+		if (strcmp(temp->data, x) == 0) return temp; //문자열 비교. strcmp가 true 일 때 0(strcmp: 두 문자열이 같으면 0을, 같지 않으면 0이 아닌 값을 반환)
+		else temp = temp->link; //temp에 temp가 가르키는 링크 연결, 다음 노드로 이동
+	} while (temp != CL->head); //temp와 CL의 헤드가 가르키는 값이 같으면 escape!
+	return NULL;
+}//노드 찾기
+
+
+CircularLinkedList_ex4.c
+
+#pragma warning(disable:6031)
+#include<stdio.h>
+#include"CircularLinkedList.h"
+
+int main(void) {
+	
+	linkedList_h* CL; //리스트 이름 CL><
+	listNode* p; //CL값이 변동되는 것을 방지하기 위한 포인터><
+
+	CL = createLinkedList_h(); // create list that name is "CL"
+	printf("(1)원형 연결 리스트 생성하기!\n");
+	printList(CL);
+	
+	printf("\n(2)원형 연결 리스트에[월]노드 삽입하기!\n");
+	insertFirstNode(CL, "월"); //insertFirstNode로 이동
+	printList(CL);
+
+	printf("\n(3)원형 연결 리스트의[월]노드 뒤에 [수]노드  삽입하기!\n");
+	p = searchNode(CL, "월"); insertMiddleNode(CL, p, "수");
+	printList(CL);
+
+	printf("\n(4)원형 연결 리스트의 [수]노드 뒤에 [금]노드 삽입하기!\n");
+	p = searchNode(CL, "수"); insertMiddleNode(CL, p, "금");
+	printList(CL);
+
+	printf("\n(5)원형 연결 리스트에서 [수]노드 삭제하기!\n");
+	p = searchNode(CL, "수"); deleteNode(CL, p);
+
+	getchar(); return 0;
+
+}
