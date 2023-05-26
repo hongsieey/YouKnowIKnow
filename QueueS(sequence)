@@ -1,0 +1,106 @@
+<QueueS.h>
+#pragma once
+#define Q_SIZE 4 //자주 사용할 거니까 그냥 정의할게ㅇㅇ
+
+typedef char element; // element를 캐릭터 변수라고 정의할게ㅇㅇ element==char이야ㅇㅇ
+
+typedef struct {
+	element queue[Q_SIZE]; //queue[4]는 캐릭터 배열, 사이즈는 4
+	int front, rear; //정수자료형으로 맨 앞과 맨 뒤 값을 저장할 수 있는 공간 생성
+}QueueType; //QueueType이라는 이름의 구조체 선언
+
+//헤더 파일에 내가 만든 함수들을 정리해 놓으면 관리 및 사용하기 쉬워짐(메뉴판 느낌)
+QueueType* createQueue(void);
+int isQueueEmpty(QueueType* Q);
+int isQueueFull(QueueType* Q);
+void enQueue(QueueType* Q, element item);
+element deQueue(QueueType* Q);
+element peekQ(QueueType* Q);
+void printQ(QueueType* Q);
+
+<QueueS.c>
+#include<stdio.h>
+#include<stdlib.h>
+#include "queueS.h"
+
+QueueType* createQueue(void) {
+	QueueType* Q; //구조체 포인터 Q선언. Q는 지역변수
+	Q = (QueueType*)malloc(sizeof(QueueType)); //Q 메모리 할당
+	Q->front = -1; //front 초깃값 설정
+	Q->rear = -1; //rear 초깃값 설정
+	return Q;
+}//돌려주는 값의 자료형은 구조체포인터(주소값), 변수는 미정.
+
+int isQueueEmpty(QueueType* Q) {
+	if (Q->front == Q->rear)
+	{
+		printf("Queue is empty!\n\t");
+		return 1;
+	}
+	else return 0;
+}//돌려주는 값의 자료형은 정수, 변수는 구조체포인터.
+//만약 Q의 front 값과 rear 값이 같으면 Queue is empty!를 출력하고 1 반환. 같지 않으면 0 반환.
+
+int isQueueFull(QueueType* Q) {
+	if (Q->rear == Q_SIZE - 1) {
+		printf("Queue is full!\n\t");
+		return 1;
+	}
+	else return 0;
+}//돌려주는 값의 자료형은 정수, 변수는 구조체 포인터.
+// Q의 rear값이 3이면 Queue is full! 출력. 아닌 경우 0 반환.
+
+void enQueue(QueueType* Q, element item) {
+	if (isQueueFull(Q)) return;
+	else {
+		Q->rear++;
+		Q->queue[Q->rear] = item;
+	}
+}//돌려주는 값 없음, 변수는 구조체 포인터 변수와 문자값(변수 두 개).
+//만약 Queue가 꽉 찼다면 돌려줌. 아니라면 추가. rear 하나 늘려서 자리 만들어주고 배열 queue의 rear값 방에 item추가.
+
+element deQueue(QueueType* Q) {
+	if (isQueueEmpty(Q))return;
+	else {
+		Q->front++;
+		return Q->queue[Q->front];
+	}
+}//돌려주는 값은 문자값, 변수는 구조체 포인터.
+//만약 Queue가 비었다면 반환. 아니라면 front하나 늘려서 삭제. Q의 배열 0queue[front]의 문자값 반환(삭제 데이터 출력).
+
+element peekQ(QueueType* Q) {
+	if (isQueueEmpty(Q)) return;
+	else return Q->queue[Q->front + 1];
+}//돌려주는 값은 문자값, 변수는 구조체 포인터.
+//만약 Queue가 비었다면 반환. 아니라면 Q의 queue[front 뒤]의 문자값 반환(가장 앞에 있는 데이터 출력).
+
+void printQ(QueueType* Q) {
+	int i;
+	printf("Queue:[");
+	for (i = Q->front + 1; i <= Q->rear; i++)
+		printf("%3c", Q->queue[i]);
+	printf(" ]");
+}//돌려주는 값 없음, 변수는 구조체 포인터.
+//i가 첫번째 문자에서부터 rear까지 문자열 출력. 방 3칸잡고 출력. rear는 마지막 배열 가르키고 있음.
+
+
+int main(void) {
+	QueueType* Q1 = createQueue();
+	element data;
+	printf("\n***** 순차 큐 연산 *****\n");
+	printf("\n 삽입 A>>"); enQueue(Q1, 'A'); printQ(Q1);
+	printf("\n 삽입 B>>"); enQueue(Q1, 'B'); printQ(Q1);
+	printf("\n 삽입 C>>"); enQueue(Q1, 'C'); printQ(Q1);
+	data = peekQ(Q1); printf("peek item:%c\n", data);
+	printf("\n삭제 >>"); data = deQueue(Q1); printQ(Q1);
+	printf("\t삭제 데이터:%c", data);
+	printf("\n삭제 >>"); data = deQueue(Q1); printQ(Q1);
+	printf("\t삭제 데이터:%c", data);
+	printf("\n삭제 >>"); data = deQueue(Q1); printQ(Q1);
+	printf("\t삭제 데이터:%c", data);
+
+	printf("\n 삽입 D>>"); enQueue(Q1, 'D'); printQ(Q1);
+	printf("\n 삽입 E>>"); enQueue(Q1, 'E'); printQ(Q1);
+
+	getchar(); return 0;
+}
