@@ -1,0 +1,121 @@
+<<LinkedQueue.h>>
+
+#pragma once
+typedef char element; //typedef는 자료형을 새롭게 이름붙일 때 사용. char 자료형의 이름을 element로 정의.
+
+typedef struct QNode {
+	element data; //문자형의 변수 data 선언.
+	struct QNode* link; //구조체 포인터 link 선언.
+}QNode; // 구조체자료형의 이름을 QNode로 정의. QNode라는 구조체 생성.
+
+typedef struct {
+	QNode* front, * rear; //구조체 포인터 front, rear 선언. 여기서 QNode는 자료형!
+}LQueueType; //LQueueType이라는 구조체 생성.
+
+//사용하는 함수
+LQueueType* createLinkedQueue(void); // 1
+int isLQEmpty(LQueueType* LQ); // 2
+void enLQueue(LQueueType* LQ, element item); // 3
+element deLQueue(LQueueType* LQ); // 4
+element peekLQ(LQueueType* LQ); // 5
+void printLQ(LQueueType* LQ); // 6
+
+/*
+1) 연결 큐 생성 함수
+2) 리스트가 비었는지 확인하는 함수(공백확인함수), int 자료형으로 반환, 구조체 포인터 변수 하나 필요
+3) 인큐 함수(삽입 함수), 구조체 포인터변수, 문자형 변수 필요. 총 2개의 변수 필요
+4) 디큐 함수(삭제 함수), 문자형으로 반환, 구조체 포인터 변수 하나 필요 
+5) 리스트가 다 찼는지 확인하는 함수, 문자형으로 반환, 구조체 포인터 변수 하나 필요
+6) 리스트 LQ 출력 함수, 구조체 포인터 변수 하나 필요
+*/
+
+
+
+
+<<LinkedQueue.c>>
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "LInkedQueue.h" // 사용자가 만든 헤더파일 가져오기("")
+
+LQueueType* createLinkedQueue(void) {
+	LQueueType* LQ; // 구조체 포인터 LQ 생성
+	LQ = (LQueueType*)malloc(sizeof(LQueueType)); // 포인터 동적메모리 할당
+	LQ->front = NULL; //front에 NULL값 삽입
+	LQ->rear = NULL; // rear에 NULL값 삽입
+	return LQ; // LQ 반환(주소)
+} // 링크 큐 생성 함수, 구조체 포인터 변수로 반환, 인수 없음.
+
+int isLQEmpty(LQueueType* LQ) {
+	if (LQ->front == NULL) {
+		printf("Linked Queue is empty!");
+		return 1; // 1 반환
+	} // LQ의 front가  NULL이면 동작
+	else return 0; // LQ의 front가 NULL이 아니면 0 반환
+} // 공백확인 함수, 정수 반환, 구조체 포인터 인수 필요.  반환 값이 1, 0으로 참과 거짓을 판단하는데에 쓰일 것임을 예측할 수 있음!
+
+void enLQueue(LQueueType* LQ, element item) {
+	QNode* newNode = (QNode*)malloc(sizeof(QNode)); // 구조체 포인터 변수에 동적 메모리 할당
+	newNode->data = item; // 새로운 노드의 데이터에 받아들인 문자 삽입
+	newNode->link = NULL; // 새로운 노드의 링크에 NULL값 삽입
+	if (LQ->front == NULL) {
+		LQ->front = newNode; // LQ의 front에 새로운 노드 주소 삽입
+		LQ->rear = newNode; // LQ의 rear에 새로운 노두 주소 삽입
+	} // 만약 LQ의 front가 NULL이면 동작
+	else {
+		LQ->rear->link = newNode; // LQ의 rear의 link에(rear가 가르키는 곳에) 새로운 노드 주소 삽입
+		LQ->rear = newNode; // LQ의 rear에 새로운 노드 주소 삽입
+	} // LQ의 front가 NULL이 아닐 때 동작
+} // 삽입 큐 함수, 반환값 없음, 구조체 포인터 인수와 문자형 인수 하나씩 필요
+
+element deLQueue(LQueueType* LQ) {
+	QNode* old = LQ->front; // 구조체 포인터 old에 LQ의 front값 삽입(주소값을 삽입하겠지)
+	element item; // 문자형 변수 item 선언, 삭제 할 데이터가 될 거얌
+	if (isLQEmpty(LQ)) return; // 만약 LQ가 공백이라면 그냥 반환
+	else {
+		item = old->data; // item에 old의 data값 삽입
+		LQ->front = LQ->front->link; // LQ의 front에 LQ의 front가 가리키는 노드의 주소를 삽입
+		if (LQ->front == NULL) // 만약 LQ의 front가 NULL이라면 동작
+			LQ->rear = NULL; //  LQ의 rear에 NULL을 삽입
+		free(old); // old 노드를 프리시켜줌
+		return item; // 삭제한 데이터 반환
+	} // 공백이 아니라면 item 반환
+} // 삭제 큐 함수, 문자형으로 반환, 구조체 포인터 인수 필요
+
+element peekLQ(LQueueType* LQ) {
+	element item; // 문자형 변수 item 서넝ㄴ
+	if (isLQEmpty(LQ)) return; // 만약 LQ가 공백이라면 그냥 반환
+	else {
+		item = LQ->front->data; // item에 LQ의 front의 data 삽입
+		return item; // item 반환
+	} // LQ가 공백이 아닐 때 동작
+}
+
+void printLQ(LQueueType* LQ) {
+	QNode* temp = LQ->front;
+	printf("Linked Queue :[");
+	while (temp) {
+		printf("%3c", temp->data);
+		temp = temp->link;
+	}
+	printf("  ]");
+}
+
+int main(void) {
+	LQueueType* LQ = createLinkedQueue();
+	element data;
+	printf("\n ***** 연결 큐 연산 ***** \n");
+	printf("\n 삽입 A>>"); enLQueue(LQ, 'A'); printLQ(LQ);
+	printf("\n 삽입 B>>"); enLQueue(LQ, 'B'); printLQ(LQ);
+	printf("\n 삽입 C>>"); enLQueue(LQ, 'C'); printLQ(LQ);
+	data = peekLQ(LQ); printf(" peek item : %c \n", data);
+	printf("\n 삭제 >>"); data = deLQueue(LQ); printLQ(LQ);
+	printf("\t삭제 데이터 : %c", data);
+	printf("\n 삭제 >>"); data = deLQueue(LQ); printLQ(LQ);
+	printf("\t삭제 데이터 : %c", data);
+	printf("\n 삭제 >>"); data = deLQueue(LQ); printLQ(LQ);
+	printf("\t\t삭제 데이터 : %c", data);
+	printf("\n 삽입 D>>"); enLQueue(LQ, 'D'); printLQ(LQ);
+	printf("\n 삽입 E>>"); enLQueue(LQ, 'E'); printLQ(LQ);
+	getchar(); return 0;
+}
